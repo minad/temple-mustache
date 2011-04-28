@@ -44,7 +44,7 @@ module Temple
       def on_mustache_section(name, content, raw_content)
         content = compile(content)
 
-        tmp1, tmp2 = tmp_var, tmp_var
+        tmp1, tmp2 = unique_name(:mutmp), unique_name(:mutmp)
         [:if,   "#{tmp1} = _mudict[#{name.to_sym.inspect}]",
          [:cond,
           ["#{tmp1} == true",
@@ -63,7 +63,7 @@ module Temple
       def on_mustache_inverted_section(name, content)
         content = compile(content)
 
-        tmp = tmp_var
+        tmp = unique_name(:mutmp)
         [:multi,
          [:code, "#{tmp} = _mudict[#{name.to_sym.inspect}]"],
          [:if, "!#{tmp} || #{tmp}.respond_to?(:empty) && #{tmp}.empty?", content]]
@@ -80,17 +80,6 @@ module Temple
       def on_mustache_tag(name, escape)
         [:escape, escape, [:dynamic, "_mudict[#{name.to_sym.inspect}]"]]
       end
-
-      private
-
-      # Generate unique temporary variable name
-      #
-      # @return [String] Variable name
-      def tmp_var
-        @tmp_var ||= 0
-        "_mutmp#{@tmp_var += 1}"
-      end
-
     end
   end
 end

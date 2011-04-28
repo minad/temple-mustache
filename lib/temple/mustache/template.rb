@@ -1,7 +1,5 @@
 module Temple
   module Mustache
-    class Template < Temple::Template
-      engine Temple::Mustache::Engine
-    end
+    Template = Temple::Templates::Tilt(Temple::Mustache::Engine, :register_as => :mustache)
   end
 end

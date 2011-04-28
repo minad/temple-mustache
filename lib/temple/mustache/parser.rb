@@ -71,7 +71,7 @@ EOF
       end
 
       # Given a string template, returns an array of tokens.
-      def compile(template)
+      def call(template)
         # Keeps information about opened sections.
         @sections = []
         @result = [:multi]

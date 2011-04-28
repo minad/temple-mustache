@@ -33,46 +33,40 @@ module Temple
 
       temple_dispatch :mustache
 
-      def compile(exp)
+      def call(exp)
         [:multi,
-         [:block, "_mudict = #{options[:dictionary]}"],
+         [:code, "_mudict = #{options[:dictionary]}"],
          super]
       end
 
       # Callback fired when the compiler finds a section token. We're
       # passed the section name and the array of tokens.
       def on_mustache_section(name, content, raw_content)
-        content = compile!(content)
+        content = compile(content)
 
         tmp1, tmp2 = tmp_var, tmp_var
-        [:multi,
-         [:block,   "if #{tmp1} = _mudict[#{name.to_sym.inspect}]"],
-         [:block,   "  if #{tmp1} == true"],
-         content,
-         [:block,   "  elsif Proc === #{tmp1}"],
-         [:dynamic, "    #{tmp1}.call(#{raw_content.inspect})"],
-         [:block,   '  else'],
-         [:block,   "    #{tmp1} = [#{tmp1}] if #{tmp1}.respond_to?(:has_key?) || !#{tmp1}.respond_to?(:map)"],
-         [:block,   "    #{tmp2} = _mudict"],
-         [:block,   "    #{tmp1}.each {|_mudict|"],
-         content,
-         [:block,   '    }'],
-         [:block,   "    _mudict = #{tmp2}"],
-         [:block,   '  end'],
-         [:block,   'end']]
+        [:if,   "#{tmp1} = _mudict[#{name.to_sym.inspect}]",
+         [:cond,
+          ["#{tmp1} == true",
+           content],
+          ["Proc === #{tmp1}",
+           [:dynamic, "#{tmp1}.call(#{raw_content.inspect})"]],
+          [:else,
+           [:code,  "#{tmp1} = [#{tmp1}] if #{tmp1}.respond_to?(:has_key?) || !#{tmp1}.respond_to?(:map)"],
+           [:code,  "#{tmp2} = _mudict"],
+           [:block, "#{tmp1}.each do |_mudict|", content],
+           [:code,  "_mudict = #{tmp2}"]]]]
       end
 
       # Fired when we find an inverted section. Just like `on_section`,
       # we're passed the inverted section name and the array of tokens.
       def on_mustache_inverted_section(name, content)
-        content = compile!(content)
+        content = compile(content)
 
         tmp = tmp_var
         [:multi,
-         [:block, "#{tmp} = _mudict[#{name.to_sym.inspect}]"],
-         [:block, "if !#{tmp} || #{tmp}.respond_to?(:empty) && #{tmp}.empty?"],
-         content,
-         [:block, 'end']]
+         [:code, "#{tmp} = _mudict[#{name.to_sym.inspect}]"],
+         [:if, "!#{tmp} || #{tmp}.respond_to?(:empty) && #{tmp}.empty?", content]]
       end
 
       # Fired when the compiler finds a partial. We want to return code
@@ -84,11 +78,7 @@ module Temple
 
       # A tag
       def on_mustache_tag(name, escape)
-        if escape
-          [:escape, :dynamic, "_mudict[#{name.to_sym.inspect}]"]
-        else
-          [:dynamic, "_mudict[#{name.to_sym.inspect}]"]
-        end
+        [:escape, escape, [:dynamic, "_mudict[#{name.to_sym.inspect}]"]]
       end
 
       private

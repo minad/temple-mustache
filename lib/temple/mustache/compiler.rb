@@ -31,7 +31,7 @@ module Temple
       set_default_options :dictionary => 'self',
                           :partial    => 'partial'
 
-      temple_dispatch :mustache
+      dispatch :mustache
 
       def call(exp)
         [:multi,

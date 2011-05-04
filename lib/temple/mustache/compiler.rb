@@ -31,8 +31,6 @@ module Temple
       set_default_options :dictionary => 'self',
                           :partial    => 'partial'
 
-      dispatch :mustache
-
       def call(exp)
         [:multi,
          [:code, "_mudict = #{options[:dictionary]}"],
@@ -60,7 +58,7 @@ module Temple
 
       # Fired when we find an inverted section. Just like `on_section`,
       # we're passed the inverted section name and the array of tokens.
-      def on_mustache_inverted_section(name, content)
+      def on_mustache_invertedsection(name, content)
         content = compile(content)
 
         tmp = unique_name(:mutmp)

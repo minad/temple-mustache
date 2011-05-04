@@ -123,7 +123,7 @@ EOF
           @result = block
         when '^'
           block = [:multi]
-          @result << [:mustache, :inverted_section, content, block]
+          @result << [:mustache, :invertedsection, content, block]
           @sections << [content, position, @result]
           @result = block
         when '/'
